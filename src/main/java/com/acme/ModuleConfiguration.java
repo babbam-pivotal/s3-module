@@ -20,7 +20,7 @@ import static org.springframework.xd.tuple.TupleBuilder.tuple;
 
 @Configuration
 @EnableIntegration
-@Import({TaxiRideConfiguration.class})
+@Import({AWSConfiguration.class})
 public class ModuleConfiguration {
 	@Autowired
 	GenericTransformer<String,Tuple> transformer;
@@ -46,7 +46,7 @@ public class ModuleConfiguration {
 
 @Configuration
 @Profile({"use-both","default"})
-class TaxiRideConfiguration {
+class AWSConfiguration {
 	
 	@Value("${remoteDir}")
 	private String remoteDir;

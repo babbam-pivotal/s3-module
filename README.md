@@ -14,4 +14,5 @@ AWS credentials file needs to be created in ~/.aws directory with following cont
 [default]
 
 aws_access_key_id=YOUR_ACCESS KEY
+
 aws_secret_access_key=YOUR_SECRET_KEY

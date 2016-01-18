@@ -1,5 +1,7 @@
 package com.acme;
 
+import java.io.BufferedWriter;
+
 /**
  * S3 Reader
  * author : mbabbar@pivotal.io
@@ -7,9 +9,11 @@ package com.acme;
  */
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -29,6 +33,7 @@ public class AWSDataCollector {
 	private String remoteDir = ""; // events | media | devices | others
 	private String localDir = "";
 	private long noOfDays = 7;
+	String keyName = "";
 	ArrayList<String> s3list = new ArrayList<String>();
 	ArrayList<File> localList = new ArrayList<File>();
 	ArrayList<String> downloadList = new ArrayList<String>();
@@ -44,6 +49,28 @@ public class AWSDataCollector {
 		ap.start();
 	}
 	
+	
+	
+	private void createDummyFiles() {
+		for (int i=0; i<2500; i++)
+		{
+			File newFile = new File("/Users/mbabbar/Desktop/events/test_"+i+".txt");
+			try {
+				newFile.createNewFile();
+				FileWriter fileWritter = new FileWriter(newFile,true);
+				BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+				bufferWritter.write(UUID.randomUUID().toString());
+				bufferWritter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+	}
+
+
+
 	public AWSDataCollector(String bName, String remoteDir, String localDir, long noOfDays) {
 		super();
 		this.bName = bName;
@@ -104,27 +131,25 @@ public class AWSDataCollector {
 			 * operation to retrieve additional results.
 			 */
 			System.out.println("Listing objects");
-			ObjectListing objectListing = s3
-					.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(remoteDir));
-			String keyName = "";
-			for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-				keyName = objectSummary.getKey();
-				if (isFile(keyName)) {
-					s3list.add(keyName);
-					//only download files which are not in local and are of same size
-					if (!existInLocalAndSameSize(objectSummary)) {
-						downloadList.add(objectSummary.getKey());
-					}
-				}
+			ObjectListing objectListing = s3.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(remoteDir));
+			
+			//process returned objects from S3 - first lot
+			processS3Objects(objectListing);
+			//handle truncated list - get other batches of objects
+			while(objectListing.isTruncated())
+			{
+				objectListing = s3.listNextBatchOfObjects(objectListing);
+				//process other batches too
+				processS3Objects(objectListing);
 			}
-			System.out.println("S3 File List");
-			System.out.println(s3list);
+			
+			
+			System.out.println("S3 File list size - " + s3list.size());
 			System.out.println();
-			System.out.println("Local File List");
-			System.out.println(localList);
+			System.out.println("Local File list size - " + localList.size());
 			System.out.println();
 			System.out.println("Download File List");
-			System.out.println(downloadList);
+			System.out.println(downloadList.size() + " Files - " + downloadList);
 			System.out.println();
 
 			// download files to localDir
@@ -150,6 +175,19 @@ public class AWSDataCollector {
 		}
 		
 		return downloadList;
+	}
+
+	private void processS3Objects(ObjectListing objectListing) {
+		for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+			keyName = objectSummary.getKey();
+			if (isFile(keyName)) {
+				s3list.add(keyName);
+				//only download files which are not in local and are of same size
+				if (!existInLocalAndSameSize(objectSummary)) {
+					downloadList.add(objectSummary.getKey());
+				}
+			}
+		}
 	}
 
 	private boolean existInLocalAndSameSize(S3ObjectSummary objectSummary) {

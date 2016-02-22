@@ -36,6 +36,8 @@ public class ModuleOptionsMetadata implements ProfileNamesProvider {
 	private String remoteDir;
 	private String noOfDays;
 	private String localDir;
+	private String unzipDir;
+	private String unzip;
 
 	
 	@NotNull
@@ -46,6 +48,15 @@ public class ModuleOptionsMetadata implements ProfileNamesProvider {
 	@NotNull
 	public String getLocalDir() {
 		return localDir;
+	}
+	
+	public String getUnzipDir() {
+		return unzipDir;
+	}
+	
+	@NotNull
+	public String getUnzip() {
+		return unzip;
 	}
 	
 	@NotNull
@@ -71,6 +82,16 @@ public class ModuleOptionsMetadata implements ProfileNamesProvider {
 	@ModuleOption("local directory")
 	public void setLocalDir(String localDir) {
 		this.localDir = localDir;
+	}
+	
+	@ModuleOption("unzip directory")
+	public void setUnzipDir(String unzipDir) {
+		this.unzipDir = unzipDir;
+	}
+	
+	@ModuleOption("unzip")
+	public void setUnzip(String unzip) {
+		this.unzip = unzip;
 	}
 	
 	@ModuleOption("No of days")

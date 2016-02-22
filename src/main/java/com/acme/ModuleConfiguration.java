@@ -20,7 +20,7 @@ import static org.springframework.xd.tuple.TupleBuilder.tuple;
 
 @Configuration
 @EnableIntegration
-@Import({TaxiRideConfiguration.class})
+@Import({AWSConfiguration.class})
 public class ModuleConfiguration {
 	@Autowired
 	GenericTransformer<String,Tuple> transformer;
@@ -46,7 +46,7 @@ public class ModuleConfiguration {
 
 @Configuration
 @Profile({"use-both","default"})
-class TaxiRideConfiguration {
+class AWSConfiguration {
 	
 	@Value("${remoteDir}")
 	private String remoteDir;
@@ -60,6 +60,12 @@ class TaxiRideConfiguration {
 	@Value("${noOfDays:}")
 	private long noOfDays;
 	
+	@Value("${unzip:}")
+	private String unzip;
+	
+	@Value("${unzipDir:}")
+	private String unzipDir;
+	
 	@Bean
 	GenericTransformer<String, Tuple> transformer() {
 		return new GenericTransformer<String, Tuple>() {
@@ -68,7 +74,7 @@ class TaxiRideConfiguration {
 				//payload is input which is a trigger only
 				
 				System.out.println("Processing Delta: " + bucketName + ":" + remoteDir + " -> " + localDir);
-				ArrayList<String> downloaded_list = new AWSDataCollector(bucketName, remoteDir, localDir, noOfDays).start();
+				ArrayList<String> downloaded_list = new AWSDataCollector(bucketName, remoteDir, localDir, noOfDays, unzip, unzipDir).start();
 				Tuple tuple = tuple().put("downloaded_files", downloaded_list).build();
 				return tuple;
 			}

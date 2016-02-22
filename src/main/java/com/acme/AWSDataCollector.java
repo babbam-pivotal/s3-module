@@ -33,6 +33,8 @@ public class AWSDataCollector {
 	private String remoteDir = ""; // events | media | devices | others
 	private String localDir = "";
 	private long noOfDays = 7;
+	private String unzip = "false";
+	private String unzipDir = "";
 	String keyName = "";
 	ArrayList<String> s3list = new ArrayList<String>();
 	ArrayList<File> localList = new ArrayList<File>();
@@ -45,7 +47,7 @@ public class AWSDataCollector {
 		 * profile by reading from the credentials file located at
 		 * (~/.aws/credentials).
 		 */
-		AWSDataCollector ap = new AWSDataCollector("nineinputdire", "events", "/Users/mbabbar/Desktop/events", 7);
+		AWSDataCollector ap = new AWSDataCollector("nineinputdire", "event", "/Users/mbabbar/Desktop/latest", 7, "true", "/Users/mbabbar/Desktop/latest");
 		ap.start();
 	}
 	
@@ -71,12 +73,15 @@ public class AWSDataCollector {
 
 
 
-	public AWSDataCollector(String bName, String remoteDir, String localDir, long noOfDays) {
+	public AWSDataCollector(String bName, String remoteDir, String localDir, long noOfDays, String unzip, String unzipDir) {
 		super();
 		this.bName = bName;
 		this.remoteDir = remoteDir;
 		this.localDir = localDir;
 		this.noOfDays = noOfDays;
+		this.unzip = unzip;
+		this.unzipDir = unzipDir;
+		
 	}
 	
 	public ArrayList<String> start() {
@@ -149,7 +154,7 @@ public class AWSDataCollector {
 			System.out.println("Local File list size - " + localList.size());
 			System.out.println();
 			System.out.println("Download File List");
-			System.out.println(downloadList.size() + " Files - " + downloadList);
+			System.out.println(downloadList.size() + " Files - " + downloadList + ", Unzip in - " + unzipDir + " -> " + unzip);
 			System.out.println();
 
 			// download files to localDir
@@ -157,8 +162,12 @@ public class AWSDataCollector {
 				GetObjectRequest gor = new GetObjectRequest(bucketName, fn);
 				File f = new File(localDir + "/" + getFileName(fn));
 				s3.getObject(gor, f);
-
+				if (unzip.equals("true") && !unzipDir.equals(""))
+				{
+					UnzipHelper.gunzipIt(f.getAbsolutePath(), unzipDir);
+				}
 			}
+
 		} catch (AmazonServiceException ase) {
 			System.out.println("Caught an AmazonServiceException, which means your request made it "
 					+ "to Amazon S3, but was rejected with an error response for some reason.");

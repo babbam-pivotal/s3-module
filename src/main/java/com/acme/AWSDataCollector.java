@@ -47,7 +47,7 @@ public class AWSDataCollector {
 		 * profile by reading from the credentials file located at
 		 * (~/.aws/credentials).
 		 */
-		AWSDataCollector ap = new AWSDataCollector("nineinputdire", "event", "/Users/mbabbar/Desktop/latest", 7, "true", "/Users/mbabbar/Desktop/latest");
+		AWSDataCollector ap = new AWSDataCollector("nineinputdire", "event/", "/Users/mbabbar/Desktop/latest", 70, "true", "/Users/mbabbar/Desktop/latest");
 		ap.start();
 	}
 	
@@ -120,9 +120,10 @@ public class AWSDataCollector {
 					System.out.println("Failed to create local directory - " + localDir);
 				}
 			File[] listOfFiles = folder.listFiles();
-
+			
 			for (int i = 0; i < listOfFiles.length; i++) {
 				if (listOfFiles[i].isFile()) {
+					System.out.println(listOfFiles[i].getName());
 					localList.add(listOfFiles[i]);
 				}
 			}
@@ -136,7 +137,7 @@ public class AWSDataCollector {
 			 * operation to retrieve additional results.
 			 */
 			System.out.println("Listing objects");
-			ObjectListing objectListing = s3.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(remoteDir));
+			ObjectListing objectListing = s3.listObjects(new ListObjectsRequest().withBucketName(bucketName). withPrefix(remoteDir));
 			
 			//process returned objects from S3 - first lot
 			processS3Objects(objectListing);
@@ -200,6 +201,7 @@ public class AWSDataCollector {
 	}
 
 	private boolean existInLocalAndSameSize(S3ObjectSummary objectSummary) {
+		
 		String keyName = objectSummary.getKey();
 		long diff = new Date().getTime() - objectSummary.getLastModified().getTime();
 		long diffDays = diff / (24 * 60 * 60 * 1000);

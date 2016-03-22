@@ -76,9 +76,11 @@ class AWSConfiguration {
 				System.out.println("Processing Delta: " + bucketName + ":" + remoteDir + " -> " + localDir);
 				ArrayList<String> downloaded_list = new AWSDataCollector(bucketName, remoteDir, localDir, noOfDays, unzip, unzipDir).start();
 				Tuple tuple = tuple().put("downloaded_files", downloaded_list).build();
+				
 				return tuple;
 			}
 		};
 	}		
+	
 }
 
